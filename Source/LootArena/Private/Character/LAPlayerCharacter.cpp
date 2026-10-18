@@ -1,5 +1,6 @@
 #include "Character/LAPlayerCharacter.h"
 
+#include "AbilitySystem/LAAbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Character/LACharacterData.h"
 #include "EnhancedInputComponent.h"
@@ -66,6 +67,18 @@ void ALAPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 	}
+
+	// 어빌리티 입력: 태그를 함께 넘겨 ASC가 어빌리티를 찾음(어빌리티 안에 태그정보가 들어있음)
+	for (const TPair<FGameplayTag, TObjectPtr<UInputAction>>& Pair : InputConfig->InputTagToAbilityAction)
+	{
+		if (Pair.Value == nullptr)
+		{
+			continue;
+		}
+
+		EnhancedInputComponent->BindAction(Pair.Value.Get(), ETriggerEvent::Started, this, &ThisClass::Input_AbilityPressed, Pair.Key);
+		EnhancedInputComponent->BindAction(Pair.Value.Get(), ETriggerEvent::Completed, this, &ThisClass::Input_AbilityReleased, Pair.Key);
+	}
 }
 
 void ALAPlayerCharacter::Input_Move(const FInputActionValue& Value)
@@ -87,4 +100,24 @@ void ALAPlayerCharacter::Input_Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookValue.X);
 	AddControllerPitchInput(LookValue.Y);
+}
+
+void ALAPlayerCharacter::Input_AbilityPressed(FGameplayTag InputTag)
+{
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
+
+	AbilitySystemComponent->AbilityInputTagPressed(InputTag);
+}
+
+void ALAPlayerCharacter::Input_AbilityReleased(FGameplayTag InputTag)
+{
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
+
+	AbilitySystemComponent->AbilityInputTagReleased(InputTag);
 }

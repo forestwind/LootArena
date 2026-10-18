@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/LACharacterBase.h"
+#include "GameplayTagContainer.h"
 #include "LAPlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -25,6 +26,8 @@ protected:
 private:
 	void Input_Move(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
+	void Input_AbilityPressed(FGameplayTag InputTag);
+	void Input_AbilityReleased(FGameplayTag InputTag);
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;

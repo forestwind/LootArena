@@ -7,8 +7,11 @@
 UENUM(BlueprintType)
 enum class ELAAbilityActivationPolicy : uint8
 {
+	// 누를 때 발동, 어빌리티가 스스로 종료
 	OnInputPressed,
+	// 누를 때 발동, 뗄 때 취소
 	WhileInputHeld,
+	// 부여 즉시 발동, 입력 무관
 	OnGiven
 };
 
