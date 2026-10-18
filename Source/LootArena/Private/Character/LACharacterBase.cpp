@@ -3,6 +3,7 @@
 #include "AbilitySystem/LAAbilitySystemComponent.h"
 #include "AbilitySystem/LACharacterAttributeSet.h"
 #include "Character/LACharacterData.h"
+#include "Equipment/LAEquipmentComponent.h"
 #include "GameplayEffect.h"
 
 ALACharacterBase::ALACharacterBase()
@@ -11,6 +12,7 @@ ALACharacterBase::ALACharacterBase()
 
 	AbilitySystemComponent = CreateDefaultSubobject<ULAAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<ULACharacterAttributeSet>(TEXT("AttributeSet"));
+	EquipmentComponent = CreateDefaultSubobject<ULAEquipmentComponent>(TEXT("EquipmentComponent"));
 }
 
 UAbilitySystemComponent* ALACharacterBase::GetAbilitySystemComponent() const
@@ -63,5 +65,11 @@ void ALACharacterBase::ApplyCharacterData(const ULACharacterData* CharacterData)
 		}
 
 		AbilitySet->GiveAbilitiesAndEffects(AbilitySystemComponent, CharacterDataGrantedHandles);
+	}
+
+	// 3. 기본 무기 장착 (메시 부착 → 무기 세트 부여)
+	if (CharacterData->DefaultWeapon != nullptr)
+	{
+		EquipmentComponent->EquipWeapon(CharacterData->DefaultWeapon);
 	}
 }

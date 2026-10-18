@@ -9,6 +9,7 @@
 class ULAAbilitySystemComponent;
 class ULACharacterAttributeSet;
 class ULACharacterData;
+class ULAEquipmentComponent;
 
 UCLASS(Abstract)
 class LOOTARENA_API ALACharacterBase : public ACharacter, public IAbilitySystemInterface
@@ -31,6 +32,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<ULACharacterAttributeSet> AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, Category = "Equipment")
+	TObjectPtr<ULAEquipmentComponent> EquipmentComponent;
 
 private:
 	FLAAbilitySetGrantedHandles CharacterDataGrantedHandles;

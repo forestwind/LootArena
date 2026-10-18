@@ -6,6 +6,7 @@
 
 class UGameplayEffect;
 class ULAAbilitySet;
+class ULAWeaponData;
 
 UCLASS()
 class LOOTARENA_API ULACharacterData : public UDataAsset
@@ -20,4 +21,8 @@ public:
 	// 1순위: 초기 스탯 등 Instant GE (AbilitySets보다 먼저)
 	UPROPERTY(EditDefaultsOnly, Category = "Effect")
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
+
+	// 3순위: 기본 무기 (AbilitySets 다음 장착)
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
+	TObjectPtr<ULAWeaponData> DefaultWeapon;
 };
