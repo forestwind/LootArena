@@ -16,10 +16,10 @@ public:
 	const UInputAction* FindNativeInputAction(const FGameplayTag& InputTag) const;
 
 	// 이동·시점 입력
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ForceInlineRow))
 	TMap<FGameplayTag, TObjectPtr<UInputAction>> InputTagToNativeAction;
 
 	// 어빌리티 입력
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (ForceInlineRow))
 	TMap<FGameplayTag, TObjectPtr<UInputAction>> InputTagToAbilityAction;
 };
