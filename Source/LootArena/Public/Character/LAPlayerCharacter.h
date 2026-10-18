@@ -7,6 +7,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class ULAInputConfig;
+class ULACharacterData;
 struct FInputActionValue;
 
 UCLASS()
@@ -18,6 +19,7 @@ public:
 	ALAPlayerCharacter();
 
 protected:
+	virtual void PossessedBy(AController* NewController) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 private:
@@ -32,4 +34,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<ULAInputConfig> InputConfig;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Character")
+	TObjectPtr<ULACharacterData> CharacterData;
 };

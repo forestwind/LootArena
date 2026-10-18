@@ -1,6 +1,7 @@
 #include "Character/LAPlayerCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Character/LACharacterData.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -27,6 +28,14 @@ ALAPlayerCharacter::ALAPlayerCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+}
+
+void ALAPlayerCharacter::PossessedBy(AController* NewController)
+{
+	// 베이스에서 InitAbilityActorInfo 먼저
+	Super::PossessedBy(NewController);
+
+	ApplyCharacterData(CharacterData);
 }
 
 void ALAPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
