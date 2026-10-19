@@ -10,7 +10,7 @@ void ULAAnimNotifyState_MeleeTrace::NotifyBegin(USkeletalMeshComponent* MeshComp
 	ULAMeleeTraceComponent* MeleeTraceComponent = FindMeleeTraceComponent(MeshComp);
 	if (MeleeTraceComponent != nullptr)
 	{
-		MeleeTraceComponent->BeginMeleeTrace();
+		MeleeTraceComponent->BeginMeleeTrace(Animation);
 	}
 }
 
@@ -21,7 +21,7 @@ void ULAAnimNotifyState_MeleeTrace::NotifyTick(USkeletalMeshComponent* MeshComp,
 	ULAMeleeTraceComponent* MeleeTraceComponent = FindMeleeTraceComponent(MeshComp);
 	if (MeleeTraceComponent != nullptr)
 	{
-		MeleeTraceComponent->TickMeleeTrace();
+		MeleeTraceComponent->TickMeleeTrace(Animation);
 	}
 }
 
@@ -32,7 +32,7 @@ void ULAAnimNotifyState_MeleeTrace::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	ULAMeleeTraceComponent* MeleeTraceComponent = FindMeleeTraceComponent(MeshComp);
 	if (MeleeTraceComponent != nullptr)
 	{
-		MeleeTraceComponent->EndMeleeTrace();
+		MeleeTraceComponent->EndMeleeTrace(Animation);
 	}
 }
 

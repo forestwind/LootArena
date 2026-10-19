@@ -1,6 +1,7 @@
 #include "AbilitySystem/Abilities/LAMeleeComboAbility.h"
 
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Animation/AnimMontage.h"
 #include "LAGameplayTags.h"
 
@@ -19,8 +20,37 @@ void ULAMeleeComboAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		return;
 	}
 
+	// 맞음 이벤트 대기 (콤보 전체 동안 유지, 어빌리티 종료 시 자동 종료)
+	UAbilityTask_WaitGameplayEvent* HitEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, LAGameplayTags::Event_Melee_Hit);
+	HitEventTask->EventReceived.AddDynamic(this, &ThisClass::OnMeleeHit);
+	HitEventTask->ReadyForActivation();
+
 	ComboIndex = 0;
 	PlayComboMontage();
+}
+
+void ULAMeleeComboAbility::OnMeleeHit(FGameplayEventData Payload)
+{
+	// 맞은 대상·콤보 단계 로그 (추후 데미지 GE 적용)
+	if (Payload.Target == nullptr)
+	{
+		return;
+	}
+
+	// 맞은 판정 구간의 몽타주로 단계 찾기
+	// ComboIndex는 블렌드 아웃 시작 시점에 이미 다음 단계로 올라감
+	// → 블렌드 아웃 중인 이전 단계 구간의 맞음이 다음 단계로 기록되는 문제 방지
+	const UObject* HitAnimation = Payload.OptionalObject.Get();
+	const int32 HitComboIndex = ComboMontages.IndexOfByPredicate([HitAnimation](const TObjectPtr<UAnimMontage>& Montage)
+	{
+		return Montage.Get() == HitAnimation;
+	});
+	if (HitComboIndex == INDEX_NONE)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Melee hit: %s, Combo %d"), *Payload.Target->GetActorNameOrLabel(), HitComboIndex + 1);
 }
 
 void ULAMeleeComboAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)

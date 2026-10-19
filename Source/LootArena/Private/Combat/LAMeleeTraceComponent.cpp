@@ -24,8 +24,11 @@ ULAMeleeTraceComponent::ULAMeleeTraceComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void ULAMeleeTraceComponent::BeginMeleeTrace()
+void ULAMeleeTraceComponent::BeginMeleeTrace(const UAnimSequenceBase* SourceAnimation)
 {
+	// 새 구간의 몽타주 (이전 몽타주 구간이 남아 있어도 이후 그쪽 Tick·End는 무시)
+	TracingAnimation = SourceAnimation;
+
 	// 맞은 목록 비움
 	AlreadyHitActors.Reset();
 
@@ -52,8 +55,14 @@ void ULAMeleeTraceComponent::BeginMeleeTrace()
 	bIsTracing = true;
 }
 
-void ULAMeleeTraceComponent::TickMeleeTrace()
+void ULAMeleeTraceComponent::TickMeleeTrace(const UAnimSequenceBase* SourceAnimation)
 {
+	// 다른 몽타주(블렌드 아웃 중인 이전 단계)의 구간이면 무시
+	if (SourceAnimation != TracingAnimation)
+	{
+		return;
+	}
+
 	// Begin 실패했거나 구간 밖이면 무시
 	if (!bIsTracing || WeaponMeshComponent == nullptr)
 	{
@@ -87,12 +96,19 @@ void ULAMeleeTraceComponent::TickMeleeTrace()
 	LastWeaponTransform = CurrentWeaponTransform;
 }
 
-void ULAMeleeTraceComponent::EndMeleeTrace()
+void ULAMeleeTraceComponent::EndMeleeTrace(const UAnimSequenceBase* SourceAnimation)
 {
+	// 다른 몽타주 구간의 끝이면 무시 (현재 진행 중인 구간 유지)
+	if (SourceAnimation != TracingAnimation)
+	{
+		return;
+	}
+
 	// 구간 끝: Tick이 더 와도 무시하도록 끄고 정리
 	bIsTracing = false;
 	AlreadyHitActors.Reset();
 	WeaponMeshComponent = nullptr;
+	TracingAnimation = nullptr;
 }
 
 bool ULAMeleeTraceComponent::ReadWeaponBox()
@@ -228,6 +244,8 @@ void ULAMeleeTraceComponent::HandleHit(const FHitResult& Hit)
 	// 맞은 지점·방향 등 스윕 결과 전체를 GAS 형식(TargetData)으로 감싸서 담음
 	// 나중에 피격 이펙트 위치·히트 리액트 방향에 사용
 	Payload.TargetData = UAbilitySystemBlueprintLibrary::AbilityTargetDataFromHitResult(Hit);
+	// 판정 구간의 몽타주 (공격 어빌리티가 어느 단계 공격인지 구분)
+	Payload.OptionalObject = TracingAnimation;
 
 	// 공격자 자신의 ASC로 이벤트 전송
 	// 공격자의 실행 중인 어빌리티 중 WaitGameplayEvent 기다리는 태스크가 받음

@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "LAMeleeTraceComponent.generated.h"
 
+class UAnimSequenceBase;
 class UStaticMeshComponent;
 
 // 근접 판정 컴포넌트
@@ -23,9 +24,10 @@ public:
 	// Begin: 구간 시작 (무기 찾기, 박스 읽기, 맞은 목록 비우기)
 	// Tick:  구간 동안 매 프레임 (스윕)
 	// End:   구간 끝 (정리)
-	void BeginMeleeTrace();
-	void TickMeleeTrace();
-	void EndMeleeTrace();
+	// SourceAnimation: 구간이 속한 몽타주 (단계 전환 시 이전 몽타주 구간과 겹침 구분)
+	void BeginMeleeTrace(const UAnimSequenceBase* SourceAnimation);
+	void TickMeleeTrace(const UAnimSequenceBase* SourceAnimation);
+	void EndMeleeTrace(const UAnimSequenceBase* SourceAnimation);
 
 protected:
 	// 조각 하나가 담당하는 최대 회전 각도
@@ -62,6 +64,13 @@ private:
 	// 판정 기준 무기 컴포넌트 
 	UPROPERTY(Transient)
 	TObjectPtr<UStaticMeshComponent> WeaponMeshComponent;
+
+	// 판정 중인 구간의 몽타주
+	// 콤보 단계 전환 시 이전 몽타주는 블렌드 아웃 중에도 판정 구간이 남아 있음
+	// → Begin(새 단계) 뒤에 End(이전 단계)가 와서 새 단계 판정이 꺼지는 문제 방지 (다른 몽타주의 Tick·End 무시)
+	// → 맞음 이벤트에 담아 어느 단계 공격인지 구분
+	UPROPERTY(Transient)
+	TObjectPtr<const UAnimSequenceBase> TracingAnimation;
 
 	// 이번 구간에 이미 맞은 대상
 	// 스윕은 매 프레임 반복되므로 같은 적이 여러 번 걸림 → 구간당 1회만 이벤트
