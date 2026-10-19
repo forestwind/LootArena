@@ -11,6 +11,7 @@ class ULAAbilitySystemComponent;
 class ULACharacterAttributeSet;
 class ULACharacterData;
 class ULAEquipmentComponent;
+class ULAMeleeTraceComponent;
 
 UCLASS(Abstract)
 class LOOTARENA_API ALACharacterBase : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
@@ -42,6 +43,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Equipment")
 	TObjectPtr<ULAEquipmentComponent> EquipmentComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	TObjectPtr<ULAMeleeTraceComponent> MeleeTraceComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Team")
 	FGenericTeamId TeamId;

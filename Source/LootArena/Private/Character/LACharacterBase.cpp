@@ -3,6 +3,7 @@
 #include "AbilitySystem/LAAbilitySystemComponent.h"
 #include "AbilitySystem/LACharacterAttributeSet.h"
 #include "Character/LACharacterData.h"
+#include "Combat/LAMeleeTraceComponent.h"
 #include "Equipment/LAEquipmentComponent.h"
 #include "GameplayEffect.h"
 
@@ -13,6 +14,7 @@ ALACharacterBase::ALACharacterBase()
 	AbilitySystemComponent = CreateDefaultSubobject<ULAAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AttributeSet = CreateDefaultSubobject<ULACharacterAttributeSet>(TEXT("AttributeSet"));
 	EquipmentComponent = CreateDefaultSubobject<ULAEquipmentComponent>(TEXT("EquipmentComponent"));
+	MeleeTraceComponent = CreateDefaultSubobject<ULAMeleeTraceComponent>(TEXT("MeleeTraceComponent"));
 }
 
 UAbilitySystemComponent* ALACharacterBase::GetAbilitySystemComponent() const
