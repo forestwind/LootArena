@@ -12,4 +12,7 @@ namespace LAGameplayTags
 
 	// Event
 	UE_DEFINE_GAMEPLAY_TAG(Event_Melee_Hit, "Event.Melee.Hit");
+
+	// Data
+	UE_DEFINE_GAMEPLAY_TAG(Data_Damage_Base, "Data.Damage.Base");
 }

@@ -33,4 +33,23 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	FGameplayAttributeData Defense;
 	ATTRIBUTE_ACCESSORS(ULACharacterAttributeSet, Defense)
+
+	// 받은 데미지 (Health 반영 후 0)
+	UPROPERTY(BlueprintReadOnly, Category = "Meta")
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(ULACharacterAttributeSet, Damage)
+
+	// 받은 회복량 (Health 반영 후 0)
+	UPROPERTY(BlueprintReadOnly, Category = "Meta")
+	FGameplayAttributeData Healing;
+	ATTRIBUTE_ACCESSORS(ULACharacterAttributeSet, Healing)
+
+protected:
+	virtual void PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const override;
+	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+private:
+	// Health 0 ~ MaxHealth
+	void ClampAttribute(const FGameplayAttribute& Attribute, float& NewValue) const;
 };
