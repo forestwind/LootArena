@@ -31,7 +31,7 @@ void ULAMeleeComboAbility::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 
 void ULAMeleeComboAbility::OnMeleeHit(FGameplayEventData Payload)
 {
-	// 맞은 대상·콤보 단계 로그 (추후 데미지 GE 적용)
+	// 맞은 대상에 콤보 단계 데미지 적용
 	if (Payload.Target == nullptr)
 	{
 		return;
@@ -50,7 +50,22 @@ void ULAMeleeComboAbility::OnMeleeHit(FGameplayEventData Payload)
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Melee hit: %s, Combo %d, BaseDamage %.0f"), *Payload.Target->GetActorNameOrLabel(), HitComboIndex + 1, ComboSteps[HitComboIndex].BaseDamage);
+	if (DamageEffect == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DamageEffect not set: %s"), *GetName());
+		return;
+	}
+
+	// 데미지 GE Spec + 단계 기본 데미지 (Data.Damage.Base)
+	const FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(DamageEffect, GetAbilityLevel());
+	if (!SpecHandle.IsValid())
+	{
+		return;
+	}
+	SpecHandle.Data->SetSetByCallerMagnitude(LAGameplayTags::Data_Damage_Base, ComboSteps[HitComboIndex].BaseDamage);
+
+	// TargetData(HitResult)의 대상에 적용, HitResult는 Effect Context에 포함
+	ApplyGameplayEffectSpecToTarget(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, SpecHandle, Payload.TargetData);
 }
 
 void ULAMeleeComboAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)

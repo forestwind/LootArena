@@ -34,6 +34,7 @@ void ULACharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 		else if (!bIsDead && LocalDamage > 0.f)
 		{
 			SetHealth(GetHealth() - LocalDamage);
+			UE_LOG(LogTemp, Log, TEXT("%s took %.0f damage, Health %.0f"), *GetOwningActor()->GetActorNameOrLabel(), LocalDamage, GetHealth());
 		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetHealingAttribute())

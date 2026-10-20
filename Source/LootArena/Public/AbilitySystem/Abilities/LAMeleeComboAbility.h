@@ -6,6 +6,7 @@
 
 class UAnimMontage;
 class UAbilityTask_PlayMontageAndWait;
+class UGameplayEffect;
 
 // 무기 콤보 한 단계
 USTRUCT()
@@ -40,6 +41,10 @@ protected:
 	// 콤보 단계 순서
 	UPROPERTY(EditDefaultsOnly, Category = "Combo")
 	TArray<FLAComboStep> ComboSteps;
+
+	// 맞은 대상에 적용할 데미지 GE (Instant, ULAExecCalc_Damage)
+	UPROPERTY(EditDefaultsOnly, Category = "Combo")
+	TSubclassOf<UGameplayEffect> DamageEffect;
 
 private:
 	void PlayComboMontage();
