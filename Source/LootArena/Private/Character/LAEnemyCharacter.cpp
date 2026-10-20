@@ -30,3 +30,10 @@ void ALAEnemyCharacter::OnCharacterDataLoaded()
 
 	ApplyCharacterData(LoadedCharacterData);
 }
+
+void ALAEnemyCharacter::HandleDeath()
+{
+	Super::HandleDeath();
+
+	SetLifeSpan(DeathLifeSpan);
+}

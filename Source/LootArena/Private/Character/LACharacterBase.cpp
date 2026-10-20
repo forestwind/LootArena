@@ -4,7 +4,9 @@
 #include "AbilitySystem/LACharacterAttributeSet.h"
 #include "Character/LACharacterData.h"
 #include "Combat/LAMeleeTraceComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Equipment/LAEquipmentComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayEffect.h"
 
 ALACharacterBase::ALACharacterBase()
@@ -74,4 +76,13 @@ void ALACharacterBase::ApplyCharacterData(const ULACharacterData* CharacterData)
 	{
 		EquipmentComponent->EquipWeapon(CharacterData->DefaultWeapon);
 	}
+}
+
+void ALACharacterBase::HandleDeath()
+{
+	// 이동 먼저 정지 (충돌 끈 뒤 낙하 방지)
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }

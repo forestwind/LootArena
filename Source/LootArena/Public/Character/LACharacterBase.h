@@ -29,6 +29,9 @@ public:
 	// 캐릭터 데이터 적용 완료 여부 (판정 대상 확인용, 로드 확인용)
 	bool IsCharacterDataApplied() const { return bCharacterDataApplied; }
 
+	// 사망 정리 (이동 정지, 충돌 끄기)
+	virtual void HandleDeath();
+
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 

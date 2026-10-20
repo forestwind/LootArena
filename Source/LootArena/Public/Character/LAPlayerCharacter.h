@@ -19,6 +19,8 @@ class LOOTARENA_API ALAPlayerCharacter : public ALACharacterBase
 public:
 	ALAPlayerCharacter();
 
+	virtual void HandleDeath() override;
+
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

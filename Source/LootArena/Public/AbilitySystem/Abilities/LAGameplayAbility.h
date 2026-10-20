@@ -28,10 +28,14 @@ public:
 
 protected:
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	virtual bool DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	FGameplayTag InputTag;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Activation")
 	ELAAbilityActivationPolicy ActivationPolicy = ELAAbilityActivationPolicy::OnInputPressed;
+
+	// 사망 상태에서도 발동 가능 (C++ 전용, 사망 어빌리티만)
+	bool bActivatableWhenDead = false;
 };

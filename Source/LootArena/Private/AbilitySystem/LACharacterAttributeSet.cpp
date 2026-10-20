@@ -33,8 +33,20 @@ void ULACharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 		}
 		else if (!bIsDead && LocalDamage > 0.f)
 		{
-			SetHealth(GetHealth() - LocalDamage);
+			const float OldHealth = GetHealth();
+			SetHealth(OldHealth - LocalDamage);
 			UE_LOG(LogTemp, Log, TEXT("%s took %.0f damage, Health %.0f"), *GetOwningActor()->GetActorNameOrLabel(), LocalDamage, GetHealth());
+
+			// Health가 0이 되는 순간만 사망 이벤트 (이미 0이면 무시)
+			if (OldHealth > 0.f && GetHealth() <= 0.f)
+			{
+				FGameplayEventData Payload;
+				Payload.EventTag = LAGameplayTags::Event_Death;
+				Payload.Instigator = Data.EffectSpec.GetContext().GetOriginalInstigator();
+				Payload.Target = GetOwningActor();
+				Payload.EventMagnitude = LocalDamage;
+				Data.Target.HandleGameplayEvent(LAGameplayTags::Event_Death, &Payload);
+			}
 		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetHealingAttribute())

@@ -1,6 +1,7 @@
 #include "AbilitySystem/Abilities/LAGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "LAGameplayTags.h"
 
 ULAGameplayAbility::ULAGameplayAbility()
 {
@@ -23,4 +24,19 @@ void ULAGameplayAbility::OnGiveAbility(const FGameplayAbilityActorInfo* ActorInf
 	}
 
 	ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle);
+}
+
+bool ULAGameplayAbility::DoesAbilitySatisfyTagRequirements(const UAbilitySystemComponent& AbilitySystemComponent, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	// 사망 상태 발동 차단 (BP 설정과 무관)
+	if (!bActivatableWhenDead && AbilitySystemComponent.HasMatchingGameplayTag(LAGameplayTags::Character_State_Dead))
+	{
+		if (OptionalRelevantTags != nullptr)
+		{
+			OptionalRelevantTags->AddTag(LAGameplayTags::Character_State_Dead);
+		}
+		return false;
+	}
+
+	return Super::DoesAbilitySatisfyTagRequirements(AbilitySystemComponent, SourceTags, TargetTags, OptionalRelevantTags);
 }

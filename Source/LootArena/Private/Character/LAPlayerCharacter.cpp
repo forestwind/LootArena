@@ -39,6 +39,20 @@ void ALAPlayerCharacter::PossessedBy(AController* NewController)
 	ApplyCharacterData(CharacterData);
 }
 
+void ALAPlayerCharacter::HandleDeath()
+{
+	Super::HandleDeath();
+
+	// 입력 비활성 (재시작 없음)
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController != nullptr)
+	{
+		DisableInput(PlayerController);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Player died"));
+}
+
 void ALAPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

@@ -11,6 +11,9 @@ class LOOTARENA_API ALAEnemyCharacter : public ALACharacterBase
 {
 	GENERATED_BODY()
 
+public:
+	virtual void HandleDeath() override;
+
 protected:
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -24,4 +27,8 @@ private:
 	// 로드 후 유지 (GC 방지)
 	UPROPERTY(Transient)
 	TObjectPtr<ULACharacterData> LoadedCharacterData;
+
+	// 사망 후 제거까지 시간 (사망 몽타주보다 길게)
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float DeathLifeSpan = 5.f;
 };
