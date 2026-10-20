@@ -19,6 +19,7 @@ public class LootArena : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
 			"AIModule",
+			"LootInventory",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
