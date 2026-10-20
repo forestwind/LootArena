@@ -22,10 +22,23 @@ void ULAUseItemAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UGameInstance* GameInstance = GetAvatarActorFromActorInfo()->GetGameInstance();
+	const AActor* AvatarActor = GetAvatarActorFromActorInfo();
+	if (TriggerEventData == nullptr || AvatarActor == nullptr)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	UGameInstance* GameInstance = AvatarActor->GetGameInstance();
+	if (GameInstance == nullptr)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
 	ULIInventorySubsystem* InventorySubsystem = GameInstance->GetSubsystem<ULIInventorySubsystem>();
 	const ULIItemSubsystem* ItemSubsystem = GameInstance->GetSubsystem<ULIItemSubsystem>();
-	if (TriggerEventData == nullptr || InventorySubsystem == nullptr || ItemSubsystem == nullptr)
+	if (InventorySubsystem == nullptr || ItemSubsystem == nullptr)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
@@ -51,7 +64,7 @@ void ULAUseItemAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 	const int32 ItemId = Entry.ItemId;
 
-	// 소비 타입만 사용 가능
+	// 소비 타입만 사용 가능 (타입 태그는 하위 태그 없이 정확히 일치)
 	const FLIItemRowBase* ItemRow = ItemSubsystem->FindItemRow(ItemId);
 	if (ItemRow == nullptr || ItemRow->GetItemType() != LALIGameplayTags::Item_Type_Consume)
 	{
@@ -62,7 +75,11 @@ void ULAUseItemAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	// 소비 타입 확인 후 리소스 변환
 	const FLALIConsumeItemAssets* ConsumeAssets = static_cast<const FLALIConsumeItemAssets*>(ItemSubsystem->FindItemAssets(ItemId));
-	const TSubclassOf<UGameplayEffect> UseEffectClass = ConsumeAssets != nullptr ? ConsumeAssets->UseEffect.LoadSynchronous() : nullptr;
+	TSubclassOf<UGameplayEffect> UseEffectClass = nullptr;
+	if (ConsumeAssets != nullptr)
+	{
+		UseEffectClass = ConsumeAssets->UseEffect.LoadSynchronous();
+	}
 	if (UseEffectClass == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UseItem: no UseEffect for ItemId %d"), ItemId);
@@ -77,11 +94,12 @@ void ULAUseItemAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 
 	// 1개 제거 후 효과 적용
-	if (InventorySubsystem->RemoveItemFromSlot(SlotId))
+	const bool bRemoved = InventorySubsystem->RemoveItemFromSlot(SlotId);
+	if (bRemoved)
 	{
 		ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, MakeOutgoingGameplayEffectSpec(UseEffectClass, GetAbilityLevel()));
 		UE_LOG(LogTemp, Log, TEXT("Used ItemId %d (SlotId %d)"), ItemId, SlotId);
 	}
 
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	EndAbility(Handle, ActorInfo, ActivationInfo, true, !bRemoved);
 }
