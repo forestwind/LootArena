@@ -7,6 +7,21 @@
 class UAnimMontage;
 class UAbilityTask_PlayMontageAndWait;
 
+// 무기 콤보 한 단계
+USTRUCT()
+struct FLAComboStep
+{
+	GENERATED_BODY()
+
+	// 단계 몽타주 (단계마다 다른 에셋, 맞음 이벤트의 단계 구분에 사용)
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> Montage;
+
+	// 단계 기본 데미지 (Data.Damage.Base)
+	UPROPERTY(EditDefaultsOnly)
+	float BaseDamage = 0.f;
+};
+
 UCLASS(Abstract)
 class LOOTARENA_API ULAMeleeComboAbility : public ULAGameplayAbility
 {
@@ -22,9 +37,9 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	virtual void InputPressed(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
-	// 콤보 단계 순서 (단계마다 다른 몽타주 에셋, 맞음 이벤트의 단계 구분에 사용)
+	// 콤보 단계 순서
 	UPROPERTY(EditDefaultsOnly, Category = "Combo")
-	TArray<TObjectPtr<UAnimMontage>> ComboMontages;
+	TArray<FLAComboStep> ComboSteps;
 
 private:
 	void PlayComboMontage();

@@ -41,16 +41,16 @@ void ULAMeleeComboAbility::OnMeleeHit(FGameplayEventData Payload)
 	// ComboIndex는 블렌드 아웃 시작 시점에 이미 다음 단계로 올라감
 	// → 블렌드 아웃 중인 이전 단계 구간의 맞음이 다음 단계로 기록되는 문제 방지
 	const UObject* HitAnimation = Payload.OptionalObject.Get();
-	const int32 HitComboIndex = ComboMontages.IndexOfByPredicate([HitAnimation](const TObjectPtr<UAnimMontage>& Montage)
+	const int32 HitComboIndex = ComboSteps.IndexOfByPredicate([HitAnimation](const FLAComboStep& Step)
 	{
-		return Montage.Get() == HitAnimation;
+		return Step.Montage.Get() == HitAnimation;
 	});
 	if (HitComboIndex == INDEX_NONE)
 	{
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Melee hit: %s, Combo %d"), *Payload.Target->GetActorNameOrLabel(), HitComboIndex + 1);
+	UE_LOG(LogTemp, Log, TEXT("Melee hit: %s, Combo %d, BaseDamage %.0f"), *Payload.Target->GetActorNameOrLabel(), HitComboIndex + 1, ComboSteps[HitComboIndex].BaseDamage);
 }
 
 void ULAMeleeComboAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
@@ -75,7 +75,7 @@ void ULAMeleeComboAbility::InputPressed(const FGameplayAbilitySpecHandle Handle,
 
 void ULAMeleeComboAbility::PlayComboMontage()
 {
-	if (!ComboMontages.IsValidIndex(ComboIndex) || ComboMontages[ComboIndex] == nullptr)
+	if (!ComboSteps.IsValidIndex(ComboIndex) || ComboSteps[ComboIndex].Montage == nullptr)
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
@@ -89,7 +89,7 @@ void ULAMeleeComboAbility::PlayComboMontage()
 
 	bNextComboInputPressed = false;
 
-	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ComboMontages[ComboIndex]);
+	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, NAME_None, ComboSteps[ComboIndex].Montage);
 	// 블렌드 아웃에서 진행·종료 (OnCompleted 미사용, 몽타주 Enable Auto Blend Out 필수)
 	MontageTask->OnBlendOut.AddDynamic(this, &ThisClass::OnMontageBlendOut);
 	MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnMontageInterrupted);
@@ -100,7 +100,7 @@ void ULAMeleeComboAbility::PlayComboMontage()
 void ULAMeleeComboAbility::OnMontageBlendOut()
 {
 	// 버퍼 입력 있음 + 다음 단계 있음 → 다음 단계
-	if (bNextComboInputPressed && ComboMontages.IsValidIndex(ComboIndex + 1))
+	if (bNextComboInputPressed && ComboSteps.IsValidIndex(ComboIndex + 1))
 	{
 		ComboIndex++;
 		PlayComboMontage();
