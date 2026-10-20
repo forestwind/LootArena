@@ -25,4 +25,8 @@ public:
 	// 3순위: 기본 무기 (AbilitySets 다음 장착)
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
 	TObjectPtr<ULAWeaponData> DefaultWeapon;
+
+	// 사망 시 드롭 그룹 (LootInventory 드롭 테이블, 0이면 드롭 없음)
+	UPROPERTY(EditDefaultsOnly, Category = "Loot")
+	int32 DropGroupId = 0;
 };
