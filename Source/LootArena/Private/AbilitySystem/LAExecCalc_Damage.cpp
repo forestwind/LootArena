@@ -6,7 +6,7 @@
 ULAExecCalc_Damage::ULAExecCalc_Damage()
 {
 	// 스냅샷 true: Spec 생성 시점 값 고정 / false: 적용 시점 값 사용
-	AttackDef =FGameplayEffectAttributeCaptureDefinition(ULACharacterAttributeSet::GetAttackAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+	AttackDef = FGameplayEffectAttributeCaptureDefinition(ULACharacterAttributeSet::GetAttackAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 	DefenseDef = FGameplayEffectAttributeCaptureDefinition(ULACharacterAttributeSet::GetDefenseAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
 
 	RelevantAttributesToCapture.Add(AttackDef);
