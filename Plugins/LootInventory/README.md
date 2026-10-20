@@ -35,9 +35,11 @@
 ### 1. 설치
 
 1. `LootInventory` 폴더를 프로젝트의 `Plugins/` 아래에 복사합니다.
+   - 소스로 복사할 때는 `Binaries`, `Intermediate` 폴더를 빼고 복사합니다 (빌드할 때 다시 만들어짐).
    - 배포용 zip을 받았다면 압축을 `Plugins/`에 풉니다. UE 5.4용 빌드 파일이 들어 있어 바로 사용할 수 있습니다.
    - 다른 엔진 버전에서는 C++ 프로젝트에서 소스로 다시 빌드해야 합니다.
-2. 에디터에서 **Edit > Plugins**로 활성화하고 에디터를 다시 시작합니다.
+2. 소스로 복사했다면 `.uproject` 우클릭 → **Generate Visual Studio project files**로 프로젝트 파일을 다시 만들고, IDE에서 먼저 빌드한 뒤 에디터를 엽니다.
+   - 프로젝트 `Plugins/` 아래의 플러그인은 기본으로 활성화되어 있어 `.uproject`를 바꿀 필요가 없습니다. 꺼져 있다면 **Edit > Plugins**에서 켜고 에디터를 다시 시작합니다.
 3. 프로젝트 `*.Build.cs`의 의존 모듈에 `"LootInventory"`를 추가합니다 (아이템 타입을 C++로 추가하기 때문에 필요).
 
 ### 2. 아이템 타입 만들기
@@ -171,6 +173,9 @@ FGameplayTag FMGLIConsumeItemRow::GetItemType() const
 
 - 아이템 DataTable·DataAsset·드롭 테이블이 있는 폴더 (예: `/Game/MyItemData`)
 - 픽업 BP 폴더 (기본값 사용 시 `/LootInventory/Pickup`, 자식 BP를 쓰면 그 폴더)
+- 리소스 구조체에서 소프트 참조로 둔 에셋(예: 사용 효과 Gameplay Effect)이 있는 폴더
+
+플러그인 폴더는 기본으로 숨겨져 있습니다. `/LootInventory/Pickup`이 보이지 않으면 콘텐츠 브라우저 오른쪽 위 **Settings**(톱니바퀴) → **Content** 항목에서 **Show Plugin Content**를 켭니다 (폴더 선택 창에도 적용됨).
 
 빠진 폴더가 있으면 에디터에서 플레이할 때 Output Log에 경고가 표시됩니다.
 
@@ -200,11 +205,23 @@ UI는 프로젝트에서 만들고, 아래 함수와 이벤트만 사용합니�
 | `GetEntries()` | `ULIInventorySubsystem` | 보유 목록 (`SlotId`, `ItemId`, `Count`) |
 | `OnInventoryChanged` | `ULIInventorySubsystem` | 목록이 바뀔 때 |
 | `OnItemAdded(ItemId, Count)` | `ULIInventorySubsystem` | 획득할 때 |
+| `FindEntryBySlotId(SlotId, OutEntry)` | `ULIInventorySubsystem` | 칸 정보 조회 (없으면 false) |
 | `RemoveItemFromSlot(SlotId)` | `ULIInventorySubsystem` | 해당 칸에서 1개 제거 |
 | `AddItem(ItemId, Count)` | `ULIInventorySubsystem` | 직접 지급 |
 | `GetItemDisplayInfo(ItemId, OutInfo)` | `ULIItemSubsystem` | 이름, 설명, 아이콘(로드됨), 등급, 타입, 최대 스택 |
 
 아이템 효과는 타입을 만든 프로젝트 쪽에서 `FindItemAssets()`로 리소스를 꺼내 적용합니다.
+
+**다른 프로젝트의 위젯을 가져올 때**
+
+C++ 부모 클래스가 있는 위젯을 Migrate하면 부모 클래스를 찾지 못해 열리지 않습니다. 새 프로젝트에 부모 클래스를 먼저 만들고 빌드한 뒤 `Config/DefaultEngine.ini`에 클래스 리다이렉트를 추가합니다.
+
+```ini
+[CoreRedirects]
++ClassRedirects=(OldName="/Script/OldProject.OldWidgetClass", NewName="/Script/NewProject.NewWidgetClass")
+```
+
+에디터를 다시 시작해 위젯을 열고 저장한 뒤 리다이렉트를 지웁니다. 부모에 같은 이름으로 있는 이벤트는 연결이 유지됩니다.
 
 ## CSV 형식
 
