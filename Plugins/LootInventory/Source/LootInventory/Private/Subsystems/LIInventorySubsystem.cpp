@@ -73,16 +73,7 @@ bool ULIInventorySubsystem::AddItem(int32 InItemId, int32 InCount)
 
 bool ULIInventorySubsystem::RemoveItemFromSlot(int32 InSlotId)
 {
-	int32 FoundIndex = INDEX_NONE;
-	for (int32 Index = 0; Index < Entries.Num(); ++Index)
-	{
-		if (Entries[Index].SlotId == InSlotId)
-		{
-			FoundIndex = Index;
-			break;
-		}
-	}
-
+	const int32 FoundIndex = FindEntryIndex(InSlotId);
 	if (FoundIndex == INDEX_NONE)
 	{
 		UE_LOG(LogLIInventory, Warning, TEXT("RemoveItemFromSlot: unknown SlotId %d"), InSlotId);
@@ -103,6 +94,23 @@ bool ULIInventorySubsystem::RemoveItemFromSlot(int32 InSlotId)
 
 	OnInventoryChanged.Broadcast();
 	return true;
+}
+
+bool ULIInventorySubsystem::FindEntryBySlotId(int32 InSlotId, FLIInventoryEntry& OutEntry) const
+{
+	const int32 Index = FindEntryIndex(InSlotId);
+	if (Index == INDEX_NONE)
+	{
+		return false;
+	}
+
+	OutEntry = Entries[Index];
+	return true;
+}
+
+int32 ULIInventorySubsystem::FindEntryIndex(int32 InSlotId) const
+{
+	return Entries.IndexOfByPredicate([InSlotId](const FLIInventoryEntry& Entry) { return Entry.SlotId == InSlotId; });
 }
 
 int32 ULIInventorySubsystem::FindFreeSlotId() const

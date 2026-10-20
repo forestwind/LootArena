@@ -14,6 +14,7 @@ namespace LAGameplayTags
 	// Event
 	UE_DEFINE_GAMEPLAY_TAG(Event_Melee_Hit, "Event.Melee.Hit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Death, "Event.Death");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Item_Use, "Event.Item.Use");
 
 	// Data
 	UE_DEFINE_GAMEPLAY_TAG(Data_Damage_Base, "Data.Damage.Base");

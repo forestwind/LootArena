@@ -29,6 +29,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "LootInventory")
 	const TArray<FLIInventoryEntry>& GetEntries() const { return Entries; }
 
+	// 칸 정보 조회 (복사본, 없으면 false)
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "LootInventory")
+	bool FindEntryBySlotId(int32 InSlotId, FLIInventoryEntry& OutEntry) const;
+
 	// 목록이 바뀔 때 (UI 갱신용)
 	UPROPERTY(BlueprintAssignable, Category = "LootInventory")
 	FLIOnInventoryChanged OnInventoryChanged;
@@ -40,6 +44,9 @@ public:
 private:
 	// 빈 칸 번호 찾기
 	int32 FindFreeSlotId() const;
+
+	// 칸 번호 → 배열 인덱스 (없으면 INDEX_NONE)
+	int32 FindEntryIndex(int32 InSlotId) const;
 
 	UPROPERTY()
 	TArray<FLIInventoryEntry> Entries;

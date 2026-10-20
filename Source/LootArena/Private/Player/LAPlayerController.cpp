@@ -1,5 +1,6 @@
 #include "Player/LAPlayerController.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -108,6 +109,22 @@ void ALAPlayerController::ToggleInventory()
 	{
 		OpenInventory();
 	}
+}
+
+void ALAPlayerController::UseInventorySlot(int32 SlotId)
+{
+	APawn* ControlledPawn = GetPawn();
+	if (ControlledPawn == nullptr)
+	{
+		return;
+	}
+
+	FGameplayEventData Payload;
+	Payload.EventTag = LAGameplayTags::Event_Item_Use;
+	Payload.Instigator = ControlledPawn;
+	// EventMagnitude = SlotId (정수를 float으로 변환 / 16,777,216까지 정확)
+	Payload.EventMagnitude = static_cast<float>(SlotId);
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ControlledPawn, LAGameplayTags::Event_Item_Use, Payload);
 }
 
 void ALAPlayerController::OpenInventory()

@@ -18,6 +18,10 @@ public:
 	// 인벤토리 열기/닫기 전환
 	void ToggleInventory();
 
+	// 슬롯 사용 요청 (UI 클릭 → 폰에 Event.Item.Use)
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void UseInventorySlot(int32 SlotId);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
