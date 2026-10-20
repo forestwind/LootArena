@@ -6,6 +6,7 @@ namespace LAGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Move, "InputTag.Move");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Look, "InputTag.Look");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack");
+	UE_DEFINE_GAMEPLAY_TAG(InputTag_Inventory, "InputTag.Inventory");
 
 	// Character State
 	UE_DEFINE_GAMEPLAY_TAG(Character_State_Dead, "Character.State.Dead");

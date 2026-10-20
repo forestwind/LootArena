@@ -1,18 +1,53 @@
 #include "Player/LAPlayerController.h"
 
+#include "Blueprint/UserWidget.h"
+#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Input/LAInputConfig.h"
 #include "InputMappingContext.h"
+#include "LAGameplayTags.h"
+#include "LootInventory/LALILootToastWidget.h"
 
 void ALAPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 로컬 플레이어만 입력 사용
+	// 로컬 플레이어만 입력·UI 사용
 	if (!IsLocalController())
 	{
 		return;
 	}
 
+	AddDefaultMappingContext();
+	CreateHUDWidgets();
+}
+
+void ALAPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInputComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Enhanced Input Component required: %s"), *GetName());
+		return;
+	}
+
+	if (UIInputConfig == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UIInputConfig not set: %s"), *GetName());
+		return;
+	}
+
+	const UInputAction* InventoryAction = UIInputConfig->FindNativeInputAction(LAGameplayTags::InputTag_Inventory);
+	if (InventoryAction != nullptr)
+	{
+		EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &ThisClass::ToggleInventory);
+	}
+}
+
+void ALAPlayerController::AddDefaultMappingContext()
+{
 	if (DefaultMappingContext == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("DefaultMappingContext not set: %s"), *GetName());
@@ -26,4 +61,70 @@ void ALAPlayerController::BeginPlay()
 	}
 
 	InputSubsystem->AddMappingContext(DefaultMappingContext, 0);
+}
+
+void ALAPlayerController::CreateHUDWidgets()
+{
+	if (LootToastWidgetClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LootToastWidgetClass not set: %s"), *GetName());
+	}
+	else
+	{
+		LootToastWidget = CreateWidget<ULALILootToastWidget>(this, LootToastWidgetClass);
+		if (LootToastWidget != nullptr)
+		{
+			LootToastWidget->AddToViewport();
+		}
+	}
+
+	if (InventoryWidgetClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InventoryWidgetClass not set: %s"), *GetName());
+		return;
+	}
+
+	// 닫힌 상태로 생성 (닫혀 있어도 목록 갱신)
+	InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
+	if (InventoryWidget != nullptr)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+		InventoryWidget->AddToViewport();
+	}
+}
+
+void ALAPlayerController::ToggleInventory()
+{
+	if (InventoryWidget == nullptr)
+	{
+		return;
+	}
+
+	if (InventoryWidget->IsVisible())
+	{
+		CloseInventory();
+	}
+	else
+	{
+		OpenInventory();
+	}
+}
+
+void ALAPlayerController::OpenInventory()
+{
+	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+
+	// 포커스 위젯 없음 (I 키가 게임 입력으로 계속 들어옴)
+	FInputModeGameAndUI InputMode;
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
+	SetShowMouseCursor(true);
+}
+
+void ALAPlayerController::CloseInventory()
+{
+	InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+
+	SetInputMode(FInputModeGameOnly());
+	SetShowMouseCursor(false);
 }
