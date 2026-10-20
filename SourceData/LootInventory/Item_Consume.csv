@@ -1,0 +1,3 @@
+﻿---,ItemId,DisplayName,Rarity,Description,MaxStack
+1001,1001,소량 체력 회복제,LI.Item.Rarity.Common,Little Heal,10
+1002,1002,고급 체력 회복제,LI.Item.Rarity.Rare,Large Heal,5
