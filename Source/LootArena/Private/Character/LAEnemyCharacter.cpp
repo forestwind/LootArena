@@ -6,14 +6,28 @@
 #include "Engine/AssetManager.h"
 #include "LAGameplayTags.h"
 #include "Subsystems/LILootSubsystem.h"
+#include "UI/LAAttributeWidget.h"
+#include "UI/LABillboardWidgetComponent.h"
+
+ALAEnemyCharacter::ALAEnemyCharacter()
+{
+	HealthBarComponent = CreateDefaultSubobject<ULABillboardWidgetComponent>(TEXT("HealthBarComponent"));
+	HealthBarComponent->SetupAttachment(GetRootComponent());
+	HealthBarComponent->SetWidgetSpace(EWidgetSpace::World);
+	// 판정·시야 트레이스 제외
+	HealthBarComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
 
 void ALAEnemyCharacter::BeginPlay()
 {
+	// 위젯 컴포넌트 위젯 생성 (컴포넌트 BeginPlay)
 	Super::BeginPlay();
 
 	// 사망 태그 구독 (드롭 그룹은 드롭 시점에 확인)
 	GetAbilitySystemComponent()->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved)
 		.AddUObject(this, &ThisClass::OnDeadTagChanged);
+
+	InitHealthBar();
 }
 
 void ALAEnemyCharacter::PossessedBy(AController* NewController)
@@ -59,6 +73,12 @@ void ALAEnemyCharacter::OnDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
 		return;
 	}
 
+	// 사망 시 체력바 숨김
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetVisibility(false);
+	}
+
 	if (LoadedCharacterData == nullptr || LoadedCharacterData->DropGroupId == 0)
 	{
 		return;
@@ -73,4 +93,22 @@ void ALAEnemyCharacter::OnDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
 	// 발밑 위치
 	const FVector FootLocation = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 	LootSubsystem->DropLoot(GetWorld(), LoadedCharacterData->DropGroupId, FootLocation);
+}
+
+void ALAEnemyCharacter::InitHealthBar()
+{
+	if (HealthBarComponent == nullptr)
+	{
+		return;
+	}
+
+	ULAAttributeWidget* HealthBarWidget = Cast<ULAAttributeWidget>(HealthBarComponent->GetUserWidgetObject());
+	if (HealthBarWidget)
+	{
+		HealthBarWidget->SetTargetActor(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HealthBar widget not set or not LAAttributeWidget: %s"), *GetName());
+	}
 }
