@@ -14,6 +14,7 @@ ALACharacterBase::ALACharacterBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	AbilitySystemComponent = CreateDefaultSubobject<ULAAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	// 서브오브젝트 세트 → ASC InitializeComponent에서 ASC 세트 목록에 자동 등록
 	AttributeSet = CreateDefaultSubobject<ULACharacterAttributeSet>(TEXT("AttributeSet"));
 	EquipmentComponent = CreateDefaultSubobject<ULAEquipmentComponent>(TEXT("EquipmentComponent"));
 	MeleeTraceComponent = CreateDefaultSubobject<ULAMeleeTraceComponent>(TEXT("MeleeTraceComponent"));

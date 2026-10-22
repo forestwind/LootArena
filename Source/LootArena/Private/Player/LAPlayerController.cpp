@@ -8,6 +8,7 @@
 #include "InputMappingContext.h"
 #include "LAGameplayTags.h"
 #include "LootInventory/LALILootToastWidget.h"
+#include "UI/LAAttributeWidget.h"
 
 void ALAPlayerController::BeginPlay()
 {
@@ -47,6 +48,18 @@ void ALAPlayerController::SetupInputComponent()
 	}
 }
 
+void ALAPlayerController::OnPossess(APawn* InPawn)
+{
+	// Super 안에서 폰 PossessedBy → 캐릭터 데이터(초기 스탯) 적용
+	Super::OnPossess(InPawn);
+
+	// 위젯 생성 전 빙의면 CreateHUDWidgets에서 연결
+	if (HealthBarWidget != nullptr)
+	{
+		HealthBarWidget->SetTargetActor(InPawn);
+	}
+}
+
 void ALAPlayerController::AddDefaultMappingContext()
 {
 	if (DefaultMappingContext == nullptr)
@@ -79,18 +92,34 @@ void ALAPlayerController::CreateHUDWidgets()
 		}
 	}
 
+	if (HealthBarWidgetClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HealthBarWidgetClass not set: %s"), *GetName());
+	}
+	else
+	{
+		HealthBarWidget = CreateWidget<ULAAttributeWidget>(this, HealthBarWidgetClass);
+		if (HealthBarWidget != nullptr)
+		{
+			HealthBarWidget->AddToViewport();
+			// 빙의가 먼저 끝난 경우 (nullptr이면 OnPossess에서 연결)
+			HealthBarWidget->SetTargetActor(GetPawn());
+		}
+	}
+
 	if (InventoryWidgetClass == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("InventoryWidgetClass not set: %s"), *GetName());
-		return;
 	}
-
-	// 닫힌 상태로 생성 (닫혀 있어도 목록 갱신)
-	InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
-	if (InventoryWidget != nullptr)
+	else
 	{
-		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
-		InventoryWidget->AddToViewport();
+		// 닫힌 상태로 생성 (닫혀 있어도 목록 갱신)
+		InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
+		if (InventoryWidget != nullptr)
+		{
+			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+			InventoryWidget->AddToViewport();
+		}
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "LAPlayerController.generated.h"
 
 class UInputMappingContext;
+class ULAAttributeWidget;
 class ULAInputConfig;
 class ULALILootToastWidget;
 class UUserWidget;
@@ -25,6 +26,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
 	// 입력 매핑 등록
@@ -48,10 +50,16 @@ private:
 	TSubclassOf<ULALILootToastWidget> LootToastWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<ULAAttributeWidget> HealthBarWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> InventoryWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<ULALILootToastWidget> LootToastWidget;
+
+	UPROPERTY()
+	TObjectPtr<ULAAttributeWidget> HealthBarWidget;
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> InventoryWidget;
