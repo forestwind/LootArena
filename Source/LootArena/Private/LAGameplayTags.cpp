@@ -8,6 +8,9 @@ namespace LAGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Attack, "InputTag.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(InputTag_Inventory, "InputTag.Inventory");
 
+	// Ability
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Attack_Melee, "Ability.Attack.Melee");
+
 	// Character State
 	UE_DEFINE_GAMEPLAY_TAG(Character_State_Dead, "Character.State.Dead");
 

@@ -5,6 +5,7 @@
 #include "Character/LACharacterData.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayEffectTypes.h"
 #include "LAGameplayTags.h"
 #include "Subsystems/LILootSubsystem.h"
@@ -16,6 +17,12 @@ ALAEnemyCharacter::ALAEnemyCharacter()
 {
 	// 배치·스폰 모두 AI 빙의 (웨이브 스폰 대비)
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// 컨트롤러 방향(포커스)으로 회전 속도에 맞춰 회전
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 360.f, 0.f);
 
 	HealthBarComponent = CreateDefaultSubobject<ULABillboardWidgetComponent>(TEXT("HealthBarComponent"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());

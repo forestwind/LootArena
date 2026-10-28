@@ -8,6 +8,7 @@
 ULAMeleeComboAbility::ULAMeleeComboAbility()
 {
 	InputTag = LAGameplayTags::InputTag_Attack;
+	AbilityTags.AddTag(LAGameplayTags::Ability_Attack_Melee);
 }
 
 void ULAMeleeComboAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

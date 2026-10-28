@@ -10,6 +10,9 @@ namespace LAGameplayTags
 	LOOTARENA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Attack);
 	LOOTARENA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(InputTag_Inventory);
 
+	// Ability
+	LOOTARENA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Attack_Melee);
+
 	// Character State
 	LOOTARENA_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Character_State_Dead);
 
