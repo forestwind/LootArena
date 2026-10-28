@@ -14,6 +14,9 @@
 
 ALAEnemyCharacter::ALAEnemyCharacter()
 {
+	// 배치·스폰 모두 AI 빙의 (웨이브 스폰 대비)
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
 	HealthBarComponent = CreateDefaultSubobject<ULABillboardWidgetComponent>(TEXT("HealthBarComponent"));
 	HealthBarComponent->SetupAttachment(GetRootComponent());
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::World);
