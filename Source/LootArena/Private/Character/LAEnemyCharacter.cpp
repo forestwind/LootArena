@@ -1,11 +1,14 @@
 #include "Character/LAEnemyCharacter.h"
 
+#include "AbilitySystem/LACharacterAttributeSet.h"
 #include "AbilitySystemComponent.h"
 #include "Character/LACharacterData.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/AssetManager.h"
+#include "GameplayEffectTypes.h"
 #include "LAGameplayTags.h"
 #include "Subsystems/LILootSubsystem.h"
+#include "TimerManager.h"
 #include "UI/LAAttributeWidget.h"
 #include "UI/LABillboardWidgetComponent.h"
 
@@ -74,10 +77,7 @@ void ALAEnemyCharacter::OnDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
 	}
 
 	// 사망 시 체력바 숨김
-	if (HealthBarComponent)
-	{
-		HealthBarComponent->SetVisibility(false);
-	}
+	HideHealthBar();
 
 	if (LoadedCharacterData == nullptr || LoadedCharacterData->DropGroupId == 0)
 	{
@@ -110,5 +110,39 @@ void ALAEnemyCharacter::InitHealthBar()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("HealthBar widget not set or not LAAttributeWidget: %s"), *GetName());
+	}
+
+	// 처음 숨김 (피격 시 표시)
+	HealthBarComponent->SetVisibility(false);
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (ASC)
+	{
+		ASC->GetGameplayAttributeValueChangeDelegate(ULACharacterAttributeSet::GetHealthAttribute())
+			.AddUObject(this, &ThisClass::OnHealthChanged);
+	}
+}
+
+void ALAEnemyCharacter::OnHealthChanged(const FOnAttributeChangeData& Data)
+{
+	// 감소 시에만 (회복·초기 스탯 무시)
+	if (Data.NewValue >= Data.OldValue || HealthBarComponent == nullptr)
+	{
+		return;
+	}
+
+	HealthBarComponent->SetVisibility(true);
+
+	// 같은 핸들 재설정 → 타이머 재시작
+	GetWorldTimerManager().SetTimer(HealthBarHideTimerHandle, this, &ThisClass::HideHealthBar, HealthBarDisplayDuration, false);
+}
+
+void ALAEnemyCharacter::HideHealthBar()
+{
+	GetWorldTimerManager().ClearTimer(HealthBarHideTimerHandle);
+
+	if (HealthBarComponent)
+	{
+		HealthBarComponent->SetVisibility(false);
 	}
 }
