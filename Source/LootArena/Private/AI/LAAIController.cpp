@@ -1,7 +1,10 @@
 #include "AI/LAAIController.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "LAGameplayTags.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 
@@ -78,6 +81,61 @@ void ALAAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimu
 	// 목표가 없을 때만 지정
 	if (BlackboardComponent->GetValueAsObject(TargetActorKeyName) == nullptr)
 	{
-		BlackboardComponent->SetValueAsObject(TargetActorKeyName, Actor);
+		SetTargetActor(Actor);
 	}
+}
+
+void ALAAIController::SetTargetActor(AActor* NewTarget)
+{
+	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+	if (BlackboardComponent == nullptr)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(NewTarget);
+
+	// 시체도 시야에 감지됨 → 사망한 대상 제외
+	if (ASC != nullptr && ASC->HasMatchingGameplayTag(LAGameplayTags::Character_State_Dead))
+	{
+		return;
+	}
+
+	BlackboardComponent->SetValueAsObject(TargetActorKeyName, NewTarget);
+
+	if (ASC != nullptr)
+	{
+		ASC->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &ThisClass::OnTargetDeadTagChanged);
+		TargetAbilitySystemComponent = ASC;
+	}
+}
+
+void ALAAIController::ClearTargetActor()
+{
+	// 이 컨트롤러의 구독 전부 해제
+	UAbilitySystemComponent* ASC = TargetAbilitySystemComponent.Get();
+	if (ASC != nullptr)
+	{
+		ASC->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+	}
+
+	TargetAbilitySystemComponent.Reset();
+
+	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+	if (BlackboardComponent != nullptr)
+	{
+		BlackboardComponent->ClearValue(TargetActorKeyName);
+	}
+}
+
+void ALAAIController::OnTargetDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	// 태그 추가 시에만 (제거 무시)
+	if (NewCount <= 0)
+	{
+		return;
+	}
+
+	ClearTargetActor();
 }

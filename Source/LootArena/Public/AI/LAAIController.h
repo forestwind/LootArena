@@ -2,9 +2,11 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "GameplayTagContainer.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "LAAIController.generated.h"
 
+class UAbilitySystemComponent;
 class UBehaviorTree;
 
 UCLASS()
@@ -32,10 +34,22 @@ private:
 	UFUNCTION()
 	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 
+	// 목표 지정 + 목표 사망 태그 구독 (사망한 대상 제외)
+	void SetTargetActor(AActor* NewTarget);
+
+	// 목표 해제 + 구독 해제
+	void ClearTargetActor();
+
+	// 목표 Character.State.Dead 추가 시 해제
+	void OnTargetDeadTagChanged(const FGameplayTag Tag, int32 NewCount);
+
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 
 	// 목표 블랙보드 키
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	FName TargetActorKeyName = TEXT("TargetActor");
+
+	// 사망 태그 구독 중인 목표 ASC
+	TWeakObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;
 };
