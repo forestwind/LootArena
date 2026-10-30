@@ -12,6 +12,8 @@ class ULACharacterAttributeSet;
 class ULACharacterData;
 class ULAEquipmentComponent;
 class ULAMeleeTraceComponent;
+class UMaterialInterface;
+struct FOnAttributeChangeData;
 
 UCLASS(Abstract)
 class LOOTARENA_API ALACharacterBase : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
@@ -33,6 +35,7 @@ public:
 	virtual void HandleDeath();
 
 protected:
+	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
 
 	// InitAbilityActorInfo 이후 호출
@@ -54,6 +57,22 @@ protected:
 	FGenericTeamId TeamId;
 
 private:
+	// Health 감소 시 피격 오버레이 켜기 + 끄기 타이머 재시작
+	void OnHealthChangedForFlash(const FOnAttributeChangeData& Data);
+
+	// 피격 오버레이 끄기 + 타이머 정리
+	void ClearHitFlash();
+
+	// 피격 시 메시에 덧씌울 머티리얼
+	UPROPERTY(EditDefaultsOnly, Category = "HitFlash")
+	TObjectPtr<UMaterialInterface> HitFlashMaterial;
+
+	// 오버레이 유지 시간
+	UPROPERTY(EditDefaultsOnly, Category = "HitFlash")
+	float HitFlashDuration = 0.15f;
+
+	FTimerHandle HitFlashTimerHandle;
+
 	FLAAbilitySetGrantedHandles CharacterDataGrantedHandles;
 	bool bCharacterDataApplied = false;
 };

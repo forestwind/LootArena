@@ -9,6 +9,8 @@
 #include "Equipment/LAEquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
+#include "TimerManager.h"
 
 ALACharacterBase::ALACharacterBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<ULACharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -25,6 +27,14 @@ ALACharacterBase::ALACharacterBase(const FObjectInitializer& ObjectInitializer)
 UAbilitySystemComponent* ALACharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
+}
+
+void ALACharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(ULACharacterAttributeSet::GetHealthAttribute())
+		.AddUObject(this, &ThisClass::OnHealthChangedForFlash);
 }
 
 void ALACharacterBase::PossessedBy(AController* NewController)
@@ -81,8 +91,32 @@ void ALACharacterBase::ApplyCharacterData(const ULACharacterData* CharacterData)
 	}
 }
 
+void ALACharacterBase::OnHealthChangedForFlash(const FOnAttributeChangeData& Data)
+{
+	// 감소 시에만 (회복·초기 스탯 무시)
+	if (Data.NewValue >= Data.OldValue)
+	{
+		return;
+	}
+
+	GetMesh()->SetOverlayMaterial(HitFlashMaterial);
+
+	// 같은 핸들 재설정 → 타이머 재시작
+	GetWorldTimerManager().SetTimer(HitFlashTimerHandle, this, &ThisClass::ClearHitFlash, HitFlashDuration, false);
+}
+
+void ALACharacterBase::ClearHitFlash()
+{
+	GetWorldTimerManager().ClearTimer(HitFlashTimerHandle);
+
+	GetMesh()->SetOverlayMaterial(nullptr);
+}
+
 void ALACharacterBase::HandleDeath()
 {
+	// 시체에 오버레이 남지 않게
+	ClearHitFlash();
+
 	// 이동 먼저 정지 (충돌 끈 뒤 낙하 방지)
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->DisableMovement();
