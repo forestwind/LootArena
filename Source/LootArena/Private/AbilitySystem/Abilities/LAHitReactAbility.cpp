@@ -12,8 +12,15 @@ ULAHitReactAbility::ULAHitReactAbility()
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
 	AbilityTriggers.Add(TriggerData);
 
+	// 실행 중 재발동 시 끝내고 다시 시작
+	bRetriggerInstancedAbility = true;
+
 	// 실행 중 경직 상태 (종료 시 자동 제거)
 	ActivationOwnedTags.AddTag(LAGameplayTags::Character_State_HitReact);
+
+	// 발동 시 근접 공격 취소, 실행 중 근접 공격 차단
+	CancelAbilitiesWithTag.AddTag(LAGameplayTags::Ability_Attack_Melee);
+	BlockAbilitiesWithTag.AddTag(LAGameplayTags::Ability_Attack_Melee);
 }
 
 void ULAHitReactAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

@@ -19,7 +19,7 @@ class LOOTARENA_API ALACharacterBase : public ACharacter, public IAbilitySystemI
 	GENERATED_BODY()
 
 public:
-	ALACharacterBase();
+	ALACharacterBase(const FObjectInitializer& ObjectInitializer);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 

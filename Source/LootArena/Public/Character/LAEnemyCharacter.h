@@ -15,7 +15,7 @@ class LOOTARENA_API ALAEnemyCharacter : public ALACharacterBase
 	GENERATED_BODY()
 
 public:
-	ALAEnemyCharacter();
+	ALAEnemyCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void HandleDeath() override;
 

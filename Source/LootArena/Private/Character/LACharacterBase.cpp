@@ -3,13 +3,15 @@
 #include "AbilitySystem/LAAbilitySystemComponent.h"
 #include "AbilitySystem/LACharacterAttributeSet.h"
 #include "Character/LACharacterData.h"
+#include "Character/LACharacterMovementComponent.h"
 #include "Combat/LAMeleeTraceComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Equipment/LAEquipmentComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayEffect.h"
 
-ALACharacterBase::ALACharacterBase()
+ALACharacterBase::ALACharacterBase(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<ULACharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = false;
 

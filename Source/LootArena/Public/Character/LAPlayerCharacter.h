@@ -17,7 +17,7 @@ class LOOTARENA_API ALAPlayerCharacter : public ALACharacterBase
 	GENERATED_BODY()
 
 public:
-	ALAPlayerCharacter();
+	ALAPlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 	virtual void HandleDeath() override;
 

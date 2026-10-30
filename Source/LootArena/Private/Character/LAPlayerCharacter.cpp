@@ -10,7 +10,8 @@
 #include "InputActionValue.h"
 #include "LAGameplayTags.h"
 
-ALAPlayerCharacter::ALAPlayerCharacter()
+ALAPlayerCharacter::ALAPlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// 컨트롤러 회전은 카메라만 사용
 	bUseControllerRotationPitch = false;
