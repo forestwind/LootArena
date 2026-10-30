@@ -13,10 +13,12 @@ namespace LAGameplayTags
 
 	// Character State
 	UE_DEFINE_GAMEPLAY_TAG(Character_State_Dead, "Character.State.Dead");
+	UE_DEFINE_GAMEPLAY_TAG(Character_State_HitReact, "Character.State.HitReact");
 
 	// Event
 	UE_DEFINE_GAMEPLAY_TAG(Event_Melee_Hit, "Event.Melee.Hit");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Death, "Event.Death");
+	UE_DEFINE_GAMEPLAY_TAG(Event_HitReact, "Event.HitReact");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Item_Use, "Event.Item.Use");
 
 	// Data
