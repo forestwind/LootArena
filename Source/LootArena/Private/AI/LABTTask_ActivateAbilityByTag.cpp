@@ -17,6 +17,12 @@ ULABTTask_ActivateAbilityByTag::ULABTTask_ActivateAbilityByTag()
 
 EBTNodeResult::Type ULABTTask_ActivateAbilityByTag::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	if (!AbilityTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AbilityTag not set: %s"), *GetName());
+		return EBTNodeResult::Failed;
+	}
+
 	const AAIController* AIController = OwnerComp.GetAIOwner();
 	if (AIController == nullptr)
 	{

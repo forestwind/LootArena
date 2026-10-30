@@ -4,12 +4,40 @@
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Animation/AnimMontage.h"
 #include "LAGameplayTags.h"
+#include "Misc/DataValidation.h"
 
 ULAMeleeComboAbility::ULAMeleeComboAbility()
 {
 	InputTag = LAGameplayTags::InputTag_Attack;
 	AbilityTags.AddTag(LAGameplayTags::Ability_Attack_Melee);
 }
+
+#if WITH_EDITOR
+EDataValidationResult ULAMeleeComboAbility::IsDataValid(FDataValidationContext& Context) const
+{
+	EDataValidationResult Result = Super::IsDataValid(Context);
+
+	TSet<const UAnimMontage*> SeenMontages;
+	for (const FLAComboStep& Step : ComboSteps)
+	{
+		const UAnimMontage* Montage = Step.Montage;
+		if (Montage == nullptr)
+		{
+			continue;
+		}
+
+		if (SeenMontages.Contains(Montage))
+		{
+			Context.AddError(FText::FromString(TEXT("ComboSteps has duplicate montage")));
+			Result = EDataValidationResult::Invalid;
+		}
+
+		SeenMontages.Add(Montage);
+	}
+
+	return Result;
+}
+#endif
 
 void ULAMeleeComboAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -93,6 +121,7 @@ void ULAMeleeComboAbility::PlayComboMontage()
 {
 	if (!ComboSteps.IsValidIndex(ComboIndex) || ComboSteps[ComboIndex].Montage == nullptr)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Combo montage not set (step %d): %s"), ComboIndex, *GetName());
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
 	}

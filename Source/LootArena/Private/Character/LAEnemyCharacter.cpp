@@ -78,7 +78,8 @@ void ALAEnemyCharacter::HandleDeath()
 	// BT 정지 + 컨트롤러 제거
 	DetachFromControllerPendingDestroy();
 
-	SetLifeSpan(DeathLifeSpan);
+	// 0 이하는 수명 해제라 최소값 보장
+	SetLifeSpan(FMath::Max(DeathLifeSpan, 0.1f));
 }
 
 void ALAEnemyCharacter::OnDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
@@ -110,13 +111,8 @@ void ALAEnemyCharacter::OnDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
 
 void ALAEnemyCharacter::InitHealthBar()
 {
-	if (HealthBarComponent == nullptr)
-	{
-		return;
-	}
-
 	ULAAttributeWidget* HealthBarWidget = Cast<ULAAttributeWidget>(HealthBarComponent->GetUserWidgetObject());
-	if (HealthBarWidget)
+	if (HealthBarWidget != nullptr)
 	{
 		HealthBarWidget->SetTargetActor(this);
 	}
@@ -128,18 +124,14 @@ void ALAEnemyCharacter::InitHealthBar()
 	// 처음 숨김 (피격 시 표시)
 	HealthBarComponent->SetVisibility(false);
 
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (ASC)
-	{
-		ASC->GetGameplayAttributeValueChangeDelegate(ULACharacterAttributeSet::GetHealthAttribute())
-			.AddUObject(this, &ThisClass::OnHealthChanged);
-	}
+	GetAbilitySystemComponent()->GetGameplayAttributeValueChangeDelegate(ULACharacterAttributeSet::GetHealthAttribute())
+		.AddUObject(this, &ThisClass::OnHealthChanged);
 }
 
 void ALAEnemyCharacter::OnHealthChanged(const FOnAttributeChangeData& Data)
 {
 	// 감소 시에만 (회복·초기 스탯 무시)
-	if (Data.NewValue >= Data.OldValue || HealthBarComponent == nullptr)
+	if (Data.NewValue >= Data.OldValue)
 	{
 		return;
 	}
@@ -154,8 +146,5 @@ void ALAEnemyCharacter::HideHealthBar()
 {
 	GetWorldTimerManager().ClearTimer(HealthBarHideTimerHandle);
 
-	if (HealthBarComponent)
-	{
-		HealthBarComponent->SetVisibility(false);
-	}
+	HealthBarComponent->SetVisibility(false);
 }
