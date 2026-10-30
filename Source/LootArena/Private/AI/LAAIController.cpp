@@ -53,6 +53,14 @@ void ALAAIController::OnPossess(APawn* InPawn)
 	StartBehaviorTree();
 }
 
+void ALAAIController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	// 목표 사망 구독 해제
+	ClearTargetActor();
+}
+
 void ALAAIController::StartBehaviorTree()
 {
 	if (BehaviorTree == nullptr)

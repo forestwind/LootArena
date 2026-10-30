@@ -75,6 +75,9 @@ void ALAEnemyCharacter::HandleDeath()
 {
 	Super::HandleDeath();
 
+	// BT 정지 + 컨트롤러 제거
+	DetachFromControllerPendingDestroy();
+
 	SetLifeSpan(DeathLifeSpan);
 }
 

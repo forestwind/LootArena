@@ -25,6 +25,7 @@ public:
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
 
 private:
 	// BT 실행 (블랙보드 생성 포함)
