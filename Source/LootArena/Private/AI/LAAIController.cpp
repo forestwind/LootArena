@@ -101,6 +101,12 @@ void ALAAIController::SetTargetActor(AActor* NewTarget)
 		return;
 	}
 
+	// 같은 목표 → 변경 없음
+	if (BlackboardComponent->GetValueAsObject(TargetActorKeyName) == NewTarget)
+	{
+		return;
+	}
+
 	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(NewTarget);
 
 	// 시체도 시야에 감지됨 → 사망한 대상 제외
@@ -109,8 +115,8 @@ void ALAAIController::SetTargetActor(AActor* NewTarget)
 		return;
 	}
 
-	// 기존 목표 구독 해제 (중복 구독 방지)
-	ClearTargetActor();
+	// 기존 목표 구독만 해제 (키는 덮어씀 → 변경 알림 1회)
+	UnsubscribeTargetDead();
 
 	BlackboardComponent->SetValueAsObject(TargetActorKeyName, NewTarget);
 
@@ -124,6 +130,17 @@ void ALAAIController::SetTargetActor(AActor* NewTarget)
 
 void ALAAIController::ClearTargetActor()
 {
+	UnsubscribeTargetDead();
+
+	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+	if (BlackboardComponent != nullptr)
+	{
+		BlackboardComponent->ClearValue(TargetActorKeyName);
+	}
+}
+
+void ALAAIController::UnsubscribeTargetDead()
+{
 	// 이 컨트롤러의 구독 전부 해제
 	UAbilitySystemComponent* ASC = TargetAbilitySystemComponent.Get();
 	if (ASC != nullptr)
@@ -132,12 +149,6 @@ void ALAAIController::ClearTargetActor()
 	}
 
 	TargetAbilitySystemComponent.Reset();
-
-	UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
-	if (BlackboardComponent != nullptr)
-	{
-		BlackboardComponent->ClearValue(TargetActorKeyName);
-	}
 }
 
 void ALAAIController::OnTargetDeadTagChanged(const FGameplayTag Tag, int32 NewCount)

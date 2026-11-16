@@ -23,7 +23,7 @@ public:
 	// 팀 원본은 캐릭터 → 변경 무시
 	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
 
-	// 목표 지정 + 목표 사망 태그 구독 (사망한 대상 제외, 기존 목표 해제)
+	// 목표 지정 + 목표 사망 태그 구독 (같은 목표·사망한 대상 제외, 기존 구독 해제)
 	void SetTargetActor(AActor* NewTarget);
 
 protected:
@@ -40,6 +40,9 @@ private:
 
 	// 목표 해제 + 구독 해제
 	void ClearTargetActor();
+
+	// 목표 사망 태그 구독 해제 (블랙보드 값 유지)
+	void UnsubscribeTargetDead();
 
 	// 목표 Character.State.Dead 추가 시 해제
 	void OnTargetDeadTagChanged(const FGameplayTag Tag, int32 NewCount);
