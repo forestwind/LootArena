@@ -109,6 +109,9 @@ void ALAAIController::SetTargetActor(AActor* NewTarget)
 		return;
 	}
 
+	// 기존 목표 구독 해제 (중복 구독 방지)
+	ClearTargetActor();
+
 	BlackboardComponent->SetValueAsObject(TargetActorKeyName, NewTarget);
 
 	if (ASC != nullptr)

@@ -23,6 +23,9 @@ public:
 	// 팀 원본은 캐릭터 → 변경 무시
 	virtual void SetGenericTeamId(const FGenericTeamId& NewTeamID) override;
 
+	// 목표 지정 + 목표 사망 태그 구독 (사망한 대상 제외, 기존 목표 해제)
+	void SetTargetActor(AActor* NewTarget);
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
@@ -34,9 +37,6 @@ private:
 	// 감지 갱신 → 블랙보드 목표
 	UFUNCTION()
 	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-
-	// 목표 지정 + 목표 사망 태그 구독 (사망한 대상 제외)
-	void SetTargetActor(AActor* NewTarget);
 
 	// 목표 해제 + 구독 해제
 	void ClearTargetActor();

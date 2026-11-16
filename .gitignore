@@ -88,3 +88,7 @@ Plugins/Developer/RiderLink/
 # External Resources
 Content/External
 Content/Fab
+
+# Claude Code
+CLAUDE.md
+.claude/
