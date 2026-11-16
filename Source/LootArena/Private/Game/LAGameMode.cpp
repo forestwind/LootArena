@@ -56,7 +56,12 @@ void ALAGameMode::CollectSpawnPoints()
 		ALAEnemySpawnPoint* SpawnPoint = *It;
 		const int32 SpawnId = SpawnPoint->GetSpawnId();
 
-		if (SpawnIdToPoint.Contains(SpawnId))
+		// 0 이하 = 미입력
+		if (SpawnId <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SpawnId not set, ignored: %s"), *SpawnPoint->GetName());
+		}
+		else if (SpawnIdToPoint.Contains(SpawnId))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Duplicate SpawnId %d, ignored: %s"), SpawnId, *SpawnPoint->GetName());
 		}
@@ -68,7 +73,7 @@ void ALAGameMode::CollectSpawnPoints()
 
 	if (SpawnIdToPoint.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No LAEnemySpawnPoint in level"));
+		UE_LOG(LogTemp, Warning, TEXT("No valid LAEnemySpawnPoint in level"));
 	}
 }
 

@@ -15,7 +15,7 @@ struct FLAArenaSpawnEntry
 	UPROPERTY(EditDefaultsOnly, Category = "Arena")
 	TSubclassOf<ALAEnemyCharacter> EnemyClass;
 
-	// ALAEnemySpawnPoint SpawnId와 매칭
+	// ALAEnemySpawnPoint SpawnId와 매칭 (1부터, 0 = 미입력)
 	UPROPERTY(EditDefaultsOnly, Category = "Arena")
 	int32 SpawnId = 0;
 };
