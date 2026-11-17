@@ -96,6 +96,16 @@ bool ULIInventorySubsystem::RemoveItemFromSlot(int32 InSlotId)
 	return true;
 }
 
+void ULIInventorySubsystem::RemoveAllItems()
+{
+	const int32 RemovedSlotCount = Entries.Num();
+	Entries.Reset();
+
+	UE_LOG(LogLIInventory, Log, TEXT("Removed all items (%d slots)"), RemovedSlotCount);
+
+	OnInventoryChanged.Broadcast();
+}
+
 bool ULIInventorySubsystem::FindEntryBySlotId(int32 InSlotId, FLIInventoryEntry& OutEntry) const
 {
 	const int32 Index = FindEntryIndex(InSlotId);

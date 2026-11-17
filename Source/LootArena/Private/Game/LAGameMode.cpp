@@ -10,6 +10,7 @@
 #include "Game/LAGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "LAGameplayTags.h"
+#include "Subsystems/LIInventorySubsystem.h"
 
 ALAGameMode::ALAGameMode()
 {
@@ -38,6 +39,8 @@ void ALAGameMode::StartArena()
 		return;
 	}
 
+	ResetData();
+
 	CollectSpawnPoints();
 	TrackPlayer();
 
@@ -45,6 +48,16 @@ void ALAGameMode::StartArena()
 	SetArenaState(ELAArenaState::WaitingToStart);
 
 	ScheduleNextStage(ArenaData->StartDelay);
+}
+
+void ALAGameMode::ResetData()
+{
+	// GameInstance 서브시스템이라 레벨을 다시 열어도 남음
+	ULIInventorySubsystem* Inventory = GetGameInstance()->GetSubsystem<ULIInventorySubsystem>();
+	if (Inventory != nullptr)
+	{
+		Inventory->RemoveAllItems();
+	}
 }
 
 void ALAGameMode::CollectSpawnPoints()

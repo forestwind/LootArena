@@ -33,6 +33,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "LootInventory")
 	bool FindEntryBySlotId(int32 InSlotId, FLIInventoryEntry& OutEntry) const;
 
+	// 전체 칸 삭제
+	UFUNCTION(BlueprintCallable, Category = "LootInventory")
+	void RemoveAllItems();
+
 	// 목록이 바뀔 때 (UI 갱신용)
 	UPROPERTY(BlueprintAssignable, Category = "LootInventory")
 	FLIOnInventoryChanged OnInventoryChanged;

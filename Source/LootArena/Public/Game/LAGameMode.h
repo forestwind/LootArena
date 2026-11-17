@@ -30,6 +30,9 @@ private:
 	// 데이터·GameState 확인 → 스폰 지점 수집 → 시작 대기
 	void StartArena();
 
+	// 이전 판 데이터 초기화 (인벤토리)
+	void ResetData();
+
 	// 레벨의 ALAEnemySpawnPoint → SpawnIdToPoint
 	void CollectSpawnPoints();
 
