@@ -207,6 +207,7 @@ UI는 프로젝트에서 만들고, 아래 함수와 이벤트만 사용합니�
 | `OnItemAdded(ItemId, Count)` | `ULIInventorySubsystem` | 획득할 때 |
 | `FindEntryBySlotId(SlotId, OutEntry)` | `ULIInventorySubsystem` | 칸 정보 조회 (없으면 false) |
 | `RemoveItemFromSlot(SlotId)` | `ULIInventorySubsystem` | 해당 칸에서 1개 제거 |
+| `RemoveAllItems()` | `ULIInventorySubsystem` | 전체 칸 삭제. `OnInventoryChanged`만 알림 (`OnItemAdded` 없음). 새 판 시작 시 |
 | `AddItem(ItemId, Count)` | `ULIInventorySubsystem` | 직접 지급 |
 | `GetItemDisplayInfo(ItemId, OutInfo)` | `ULIItemSubsystem` | 이름, 설명, 아이콘(로드됨), 등급, 타입, 최대 스택 |
 
