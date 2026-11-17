@@ -4,8 +4,11 @@
 #include "Blueprint/UserWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Game/LAGameState.h"
 #include "Input/LAInputConfig.h"
 #include "InputMappingContext.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "LAGameplayTags.h"
 #include "LootInventory/LALILootToastWidget.h"
 #include "UI/LAArenaStateWidget.h"
@@ -16,13 +19,21 @@ void ALAPlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	// 로컬 플레이어만 입력·UI 사용
-	if (!IsLocalController())
+	if (IsLocalController())
 	{
-		return;
+		// 이전 레벨 UI 전용 입력 해제 (뷰포트 설정은 레벨 이동 후에도 남음)
+		SetGameInputMode();
+		AddDefaultMappingContext();
+		CreateHUDWidgets();
+		ConnectGameState();
 	}
+}
 
-	AddDefaultMappingContext();
-	CreateHUDWidgets();
+void ALAPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	DisconnectGameState();
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void ALAPlayerController::SetupInputComponent()
@@ -80,66 +91,46 @@ void ALAPlayerController::AddDefaultMappingContext()
 
 void ALAPlayerController::CreateHUDWidgets()
 {
-	if (LootToastWidgetClass == nullptr)
+	LootToastWidget = Cast<ULALILootToastWidget>(CreateViewportWidget(LootToastWidgetClass, TEXT("LootToastWidgetClass")));
+
+	HealthBarWidget = Cast<ULAAttributeWidget>(CreateViewportWidget(HealthBarWidgetClass, TEXT("HealthBarWidgetClass")));
+	if (HealthBarWidget != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("LootToastWidgetClass not set: %s"), *GetName());
-	}
-	else
-	{
-		LootToastWidget = CreateWidget<ULALILootToastWidget>(this, LootToastWidgetClass);
-		if (LootToastWidget != nullptr)
-		{
-			LootToastWidget->AddToViewport();
-		}
+		// 빙의가 먼저 끝난 경우 (nullptr이면 OnPossess에서 연결)
+		HealthBarWidget->SetTargetActor(GetPawn());
 	}
 
-	if (HealthBarWidgetClass == nullptr)
+	ArenaStageWidget = Cast<ULAArenaStateWidget>(CreateViewportWidget(ArenaStageWidgetClass, TEXT("ArenaStageWidgetClass")));
+
+	// 닫힌 상태로 생성 (닫혀 있어도 목록 갱신)
+	InventoryWidget = CreateViewportWidget(InventoryWidgetClass, TEXT("InventoryWidgetClass"));
+	if (InventoryWidget != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HealthBarWidgetClass not set: %s"), *GetName());
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	else
+}
+
+UUserWidget* ALAPlayerController::CreateViewportWidget(TSubclassOf<UUserWidget> WidgetClass, const TCHAR* ClassPropertyName)
+{
+	if (WidgetClass == nullptr)
 	{
-		HealthBarWidget = CreateWidget<ULAAttributeWidget>(this, HealthBarWidgetClass);
-		if (HealthBarWidget != nullptr)
-		{
-			HealthBarWidget->AddToViewport();
-			// 빙의가 먼저 끝난 경우 (nullptr이면 OnPossess에서 연결)
-			HealthBarWidget->SetTargetActor(GetPawn());
-		}
+		UE_LOG(LogTemp, Warning, TEXT("%s not set: %s"), ClassPropertyName, *GetName());
+		return nullptr;
 	}
 
-	if (ArenaStageWidgetClass == nullptr)
+	UUserWidget* Widget = CreateWidget<UUserWidget>(this, WidgetClass);
+	if (Widget != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ArenaStageWidgetClass not set: %s"), *GetName());
-	}
-	else
-	{
-		ArenaStageWidget = CreateWidget<ULAArenaStateWidget>(this, ArenaStageWidgetClass);
-		if (ArenaStageWidget != nullptr)
-		{
-			ArenaStageWidget->AddToViewport();
-		}
+		Widget->AddToViewport();
 	}
 
-	if (InventoryWidgetClass == nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("InventoryWidgetClass not set: %s"), *GetName());
-	}
-	else
-	{
-		// 닫힌 상태로 생성 (닫혀 있어도 목록 갱신)
-		InventoryWidget = CreateWidget<UUserWidget>(this, InventoryWidgetClass);
-		if (InventoryWidget != nullptr)
-		{
-			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
-			InventoryWidget->AddToViewport();
-		}
-	}
+	return Widget;
 }
 
 void ALAPlayerController::ToggleInventory()
 {
-	if (InventoryWidget == nullptr)
+	// 아레나 종료 후 열기 차단
+	if (InventoryWidget == nullptr || IsArenaFinished())
 	{
 		return;
 	}
@@ -170,6 +161,20 @@ void ALAPlayerController::UseInventorySlot(int32 SlotId)
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(ControlledPawn, LAGameplayTags::Event_Item_Use, Payload);
 }
 
+void ALAPlayerController::RestartArena()
+{
+	// 결과 화면 UI 전용 입력 해제 (뷰포트 설정은 레벨 이동 후에도 남음)
+	SetGameInputMode();
+
+	// 인벤토리 초기화는 GameMode 아레나 시작 시
+	UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this)));
+}
+
+void ALAPlayerController::QuitArena()
+{
+	UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
+}
+
 void ALAPlayerController::OpenInventory()
 {
 	InventoryWidget->SetVisibility(ESlateVisibility::Visible);
@@ -185,6 +190,98 @@ void ALAPlayerController::CloseInventory()
 {
 	InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 
-	SetInputMode(FInputModeGameOnly());
+	SetGameInputMode();
+}
+
+void ALAPlayerController::SetGameInputMode()
+{
+	// 첫 클릭도 게임 입력으로 (프로젝트 기본 캡처 모드와 같음)
+	FInputModeGameOnly InputMode;
+	InputMode.SetConsumeCaptureMouseDown(false);
+	SetInputMode(InputMode);
 	SetShowMouseCursor(false);
+}
+
+void ALAPlayerController::ConnectGameState()
+{
+	// 재호출 시 중복 구독 방지
+	DisconnectGameState();
+
+	ALAGameState* FoundGameState = GetWorld()->GetGameState<ALAGameState>();
+	if (FoundGameState == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameState is not LAGameState: %s"), *GetName());
+		return;
+	}
+
+	ConnectedGameState = FoundGameState;
+	ArenaStateChangedHandle = FoundGameState->OnArenaStateChanged.AddUObject(this, &ThisClass::HandleArenaStateChanged);
+}
+
+void ALAPlayerController::DisconnectGameState()
+{
+	ALAGameState* OldGameState = ConnectedGameState.Get();
+	if (OldGameState != nullptr)
+	{
+		OldGameState->OnArenaStateChanged.Remove(ArenaStateChangedHandle);
+	}
+
+	ConnectedGameState.Reset();
+	ArenaStateChangedHandle.Reset();
+}
+
+void ALAPlayerController::HandleArenaStateChanged()
+{
+	if (!IsArenaFinished())
+	{
+		return;
+	}
+
+	// 결과 화면 예약·표시 후 재진입 무시
+	if (ArenaResultWidget != nullptr || GetWorldTimerManager().IsTimerActive(ResultTimerHandle))
+	{
+		return;
+	}
+
+	if (InventoryWidget != nullptr && InventoryWidget->IsVisible())
+	{
+		CloseInventory();
+	}
+
+	// 0 이하면 바로 표시 (타이머는 0 이하면 설정되지 않음)
+	if (ResultDelay > 0.f)
+	{
+		GetWorldTimerManager().SetTimer(ResultTimerHandle, this, &ThisClass::ShowArenaResult, ResultDelay, false);
+	}
+	else
+	{
+		ShowArenaResult();
+	}
+}
+
+void ALAPlayerController::ShowArenaResult()
+{
+	ArenaResultWidget = Cast<ULAArenaStateWidget>(CreateViewportWidget(ArenaResultWidgetClass, TEXT("ArenaResultWidgetClass")));
+	if (ArenaResultWidget == nullptr)
+	{
+		return;
+	}
+
+	// 눌린 키 떼기 처리 (UI 전용 입력 후에는 키 떼기가 게임에 전달되지 않음)
+	FlushPressedKeys();
+
+	// 게임 입력 차단, 버튼 클릭만
+	SetInputMode(FInputModeUIOnly());
+	SetShowMouseCursor(true);
+}
+
+bool ALAPlayerController::IsArenaFinished() const
+{
+	const ALAGameState* ArenaGameState = ConnectedGameState.Get();
+	if (ArenaGameState == nullptr)
+	{
+		return false;
+	}
+
+	return ArenaGameState->IsArenaFinished();
 }

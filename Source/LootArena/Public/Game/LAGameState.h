@@ -39,6 +39,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Arena")
 	int32 GetStageCount() const { return StageCount; }
 
+	// 승리·패배 확정 여부
+	UFUNCTION(BlueprintPure, Category = "Arena")
+	bool IsArenaFinished() const;
+
 	FLAOnArenaStateChanged OnArenaStateChanged;
 
 private:

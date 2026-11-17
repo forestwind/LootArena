@@ -12,3 +12,8 @@ void ALAGameState::SetArenaState(ELAArenaState NewState, int32 NewStageNumber)
 
 	OnArenaStateChanged.Broadcast();
 }
+
+bool ALAGameState::IsArenaFinished() const
+{
+	return ArenaState == ELAArenaState::Victory || ArenaState == ELAArenaState::Defeat;
+}

@@ -267,8 +267,7 @@ void ALAGameMode::FinishArena(ELAArenaState ResultState)
 	}
 
 	// 이미 종료 → 무시 (승리 후 사망 등)
-	const ELAArenaState CurrentState = ArenaGameState->GetArenaState();
-	if (CurrentState == ELAArenaState::Victory || CurrentState == ELAArenaState::Defeat)
+	if (ArenaGameState->IsArenaFinished())
 	{
 		return;
 	}
