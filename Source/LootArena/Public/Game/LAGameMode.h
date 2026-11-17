@@ -22,6 +22,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Arena")
 	TObjectPtr<ULAArenaData> ArenaData;
@@ -45,6 +46,12 @@ private:
 	// 살아 있는 적 목록 추가 + 사망 태그 구독
 	void TrackEnemy(ALAEnemyCharacter* Enemy);
 
+	// 적 사망 태그 구독 해제
+	void UntrackEnemy(ALAEnemyCharacter* Enemy);
+
+	// 살아 있는 적 전체 구독 해제 + 목록 비우기
+	void UntrackAllEnemies();
+
 	// 적 Character.State.Dead 추가 시 목록에서 제거
 	void OnEnemyDeadTagChanged(const FGameplayTag Tag, int32 NewCount, TWeakObjectPtr<ALAEnemyCharacter> Enemy);
 
@@ -53,6 +60,9 @@ private:
 
 	// 플레이어 사망 태그 구독
 	void TrackPlayer();
+
+	// 플레이어 사망 태그 구독 해제
+	void UntrackPlayer();
 
 	// 플레이어 Character.State.Dead 추가 시 패배
 	void OnPlayerDeadTagChanged(const FGameplayTag Tag, int32 NewCount);

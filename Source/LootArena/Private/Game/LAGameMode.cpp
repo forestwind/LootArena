@@ -24,6 +24,15 @@ void ALAGameMode::BeginPlay()
 	StartArena();
 }
 
+void ALAGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(StageTimerHandle);
+	UntrackPlayer();
+	UntrackAllEnemies();
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void ALAGameMode::StartArena()
 {
 	if (ArenaData == nullptr)
@@ -181,6 +190,24 @@ void ALAGameMode::TrackEnemy(ALAEnemyCharacter* Enemy)
 		.AddUObject(this, &ThisClass::OnEnemyDeadTagChanged, TWeakObjectPtr<ALAEnemyCharacter>(Enemy));
 }
 
+void ALAGameMode::UntrackEnemy(ALAEnemyCharacter* Enemy)
+{
+	if (Enemy != nullptr)
+	{
+		Enemy->GetAbilitySystemComponent()->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+	}
+}
+
+void ALAGameMode::UntrackAllEnemies()
+{
+	for (const TWeakObjectPtr<ALAEnemyCharacter>& Enemy : AliveEnemies)
+	{
+		UntrackEnemy(Enemy.Get());
+	}
+
+	AliveEnemies.Reset();
+}
+
 void ALAGameMode::OnEnemyDeadTagChanged(const FGameplayTag Tag, int32 NewCount, TWeakObjectPtr<ALAEnemyCharacter> Enemy)
 {
 	// 태그 추가 시에만 (제거 무시)
@@ -189,12 +216,7 @@ void ALAGameMode::OnEnemyDeadTagChanged(const FGameplayTag Tag, int32 NewCount, 
 		return;
 	}
 
-	// 사망 태그 구독 해제
-	ALAEnemyCharacter* DeadEnemy = Enemy.Get();
-	if (DeadEnemy != nullptr)
-	{
-		DeadEnemy->GetAbilitySystemComponent()->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
-	}
+	UntrackEnemy(Enemy.Get());
 
 	// 목록에 없던 적이면 무시 (중복 집계 방지)
 	if (AliveEnemies.Remove(Enemy) == 0)
@@ -247,6 +269,17 @@ void ALAGameMode::TrackPlayer()
 	PlayerAbilitySystemComponent = ASC;
 }
 
+void ALAGameMode::UntrackPlayer()
+{
+	UAbilitySystemComponent* ASC = PlayerAbilitySystemComponent.Get();
+	if (ASC != nullptr)
+	{
+		ASC->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+	}
+
+	PlayerAbilitySystemComponent.Reset();
+}
+
 void ALAGameMode::OnPlayerDeadTagChanged(const FGameplayTag Tag, int32 NewCount)
 {
 	// 태그 추가 시에만 (제거 무시)
@@ -275,13 +308,7 @@ void ALAGameMode::FinishArena(ELAArenaState ResultState)
 	// 대기 중인 다음 스테이지 취소
 	GetWorldTimerManager().ClearTimer(StageTimerHandle);
 
-	// 플레이어 사망 태그 구독 해제
-	UAbilitySystemComponent* ASC = PlayerAbilitySystemComponent.Get();
-	if (ASC != nullptr)
-	{
-		ASC->RegisterGameplayTagEvent(LAGameplayTags::Character_State_Dead, EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
-	}
-	PlayerAbilitySystemComponent.Reset();
+	UntrackPlayer();
 
 	SetArenaState(ResultState);
 

@@ -32,6 +32,7 @@ void ALAPlayerController::BeginPlay()
 void ALAPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	DisconnectGameState();
+	GetWorldTimerManager().ClearTimer(ResultTimerHandle);
 
 	Super::EndPlay(EndPlayReason);
 }
