@@ -8,6 +8,7 @@
 #include "InputMappingContext.h"
 #include "LAGameplayTags.h"
 #include "LootInventory/LALILootToastWidget.h"
+#include "UI/LAArenaStateWidget.h"
 #include "UI/LAAttributeWidget.h"
 
 void ALAPlayerController::BeginPlay()
@@ -104,6 +105,19 @@ void ALAPlayerController::CreateHUDWidgets()
 			HealthBarWidget->AddToViewport();
 			// 빙의가 먼저 끝난 경우 (nullptr이면 OnPossess에서 연결)
 			HealthBarWidget->SetTargetActor(GetPawn());
+		}
+	}
+
+	if (ArenaStageWidgetClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ArenaStageWidgetClass not set: %s"), *GetName());
+	}
+	else
+	{
+		ArenaStageWidget = CreateWidget<ULAArenaStateWidget>(this, ArenaStageWidgetClass);
+		if (ArenaStageWidget != nullptr)
+		{
+			ArenaStageWidget->AddToViewport();
 		}
 	}
 

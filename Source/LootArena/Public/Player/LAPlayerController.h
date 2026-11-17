@@ -5,6 +5,7 @@
 #include "LAPlayerController.generated.h"
 
 class UInputMappingContext;
+class ULAArenaStateWidget;
 class ULAAttributeWidget;
 class ULAInputConfig;
 class ULALILootToastWidget;
@@ -55,6 +56,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> InventoryWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<ULAArenaStateWidget> ArenaStageWidgetClass;
+
 	UPROPERTY()
 	TObjectPtr<ULALILootToastWidget> LootToastWidget;
 
@@ -63,4 +67,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> InventoryWidget;
+
+	UPROPERTY()
+	TObjectPtr<ULAArenaStateWidget> ArenaStageWidget;
 };
